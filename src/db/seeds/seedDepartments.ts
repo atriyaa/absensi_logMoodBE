@@ -19,7 +19,7 @@ async function seedDepartments() {
 
 seedDepartments()
     .catch((error) => {
-        console.error('❌ Failed to seed departments:', error);
+        console.error('❌ Failed to seed departments', error);
     })
     .finally(async () => {
         process.exit(0);

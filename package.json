@@ -25,13 +25,17 @@
   },
   "homepage": "https://github.com/atriyaa/absensi_logMoodBE#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
     "mysql2": "^3.22.5"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.0",
     "drizzle-kit": "^0.31.10",
