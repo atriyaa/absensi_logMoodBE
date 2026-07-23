@@ -7,6 +7,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import rolesRoutes from './routes/rolesRoutes.js';
 import  attendanceLogsRoutes  from './routes/attedanceLogsRoutes.js';
+import moodJournalsRoutes from './routes/moodJournalsRoutes.js';
 
 
 const app = express();
@@ -28,6 +29,7 @@ app.use('/departments', departmentsRoutes);
 app.use('/employees', employeesRoutes);
 app.use('/roles', rolesRoutes);
 app.use('/attedanceLogs', attendanceLogsRoutes);
+app.use('/moodJournals', moodJournalsRoutes);
 app.use(errorHandler);
 
 app.listen(3000, () => {
