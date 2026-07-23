@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { eq, desc } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { moodJournals } from '../db/moodJournals.js';
+import { employees } from '../db/employees.js';
 
 class AppError extends Error {
   statusCode: number;
@@ -51,8 +52,17 @@ export const createMoodJournal = async (req: Request, res: Response, next: NextF
 export const getAllMoodJournals = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const logs = await db
-      .select()
+      .select({
+        id: moodJournals.id,
+        employeeId: moodJournals.employeeId,
+        employeeName: employees.full_name,
+        attendanceLogId: moodJournals.attendanceLogId,
+        moodLevel: moodJournals.moodLevel,
+        note: moodJournals.note,
+        createdAt: moodJournals.createdAt,
+      })
       .from(moodJournals)
+      .leftJoin(employees, eq(moodJournals.employeeId, employees.id))
       .orderBy(desc(moodJournals.createdAt));
 
     return res.status(200).json({

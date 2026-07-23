@@ -10,7 +10,7 @@ router.get('/', departmentsController.getAllDepartments);
 router.get('/:id', departmentsController.getDepartmentsById);
 
 router.post('/', authenticateToken, upload.none(), departmentsController.createDepartments);
-router.put('/', authenticateToken, upload.none(), departmentsController.updateDepartments);
-router.delete('/', authenticateToken, upload.none(), departmentsController.removeDepartments);
+router.put('/:id', authenticateToken, upload.none(), departmentsController.updateDepartments);
+router.delete('/:id', authenticateToken, upload.none(), departmentsController.removeDepartments);
 
 export default router;

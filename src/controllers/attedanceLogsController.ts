@@ -1,7 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { attendanceLogs } from '../db/attedanceLogs.js';
+import { employees } from '../db/employees.js';
+import { departments } from '../db/departments.js';
 
 class AppError extends Error {
   statusCode: number;
@@ -135,6 +137,38 @@ export const getMyAttendance = async (req: Request, res: Response, next: NextFun
     return res.status(200).json({
       success: true,
       message: 'Berhasil mengambil riwayat presensi',
+      data: logs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET ALL ATTENDANCE LOGS (Admin)
+ */
+export const getAllAttendanceLogs = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const logs = await db
+      .select({
+        id: attendanceLogs.id,
+        employeeId: attendanceLogs.employeeId,
+        employeeName: employees.full_name,
+        departmentName: departments.departmentsName,
+        attendanceDate: attendanceLogs.attendanceDate,
+        checkIn: attendanceLogs.checkIn,
+        checkOut: attendanceLogs.checkOut,
+        workingHours: attendanceLogs.workingHours,
+        attendanceStatus: attendanceLogs.attendanceStatus,
+        createdAt: attendanceLogs.createdAt,
+      })
+      .from(attendanceLogs)
+      .leftJoin(employees, eq(attendanceLogs.employeeId, employees.id))
+      .leftJoin(departments, eq(employees.department_id, departments.id))
+      .orderBy(desc(attendanceLogs.createdAt));
+
+    return res.status(200).json({
+      success: true,
       data: logs,
     });
   } catch (error) {

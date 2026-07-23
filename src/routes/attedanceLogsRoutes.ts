@@ -2,13 +2,17 @@ import { Router } from 'express';
 import { 
   checkIn, 
   checkOut, 
-  getMyAttendance 
+  getMyAttendance,
+  getAllAttendanceLogs
 } from '../controllers/attedanceLogsController.js'; 
 import { authenticateToken } from '../middlewares/auth.js'; 
 
-const upload: Router = Router();
 const router = Router();
 
+// Admin route (all attendance logs)
+router.get('/', getAllAttendanceLogs);
+
+// Employee routes
 // router.use(authenticateToken);
 router.post('/check-in', checkIn);
 router.put('/check-out', checkOut); 
