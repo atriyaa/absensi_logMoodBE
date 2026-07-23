@@ -6,6 +6,7 @@ import departmentsRoutes from './routes/departmentsRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import rolesRoutes from './routes/rolesRoutes.js';
+import  attendanceLogsRoutes  from './routes/attedanceLogsRoutes.js';
 
 
 const app = express();
@@ -26,9 +27,7 @@ app.use('/auth', authRoutes);
 app.use('/departments', departmentsRoutes);
 app.use('/employees', employeesRoutes);
 app.use('/roles', rolesRoutes);
-
-
-
+app.use('/attedanceLogs', attendanceLogsRoutes);
 app.use(errorHandler);
 
 app.listen(3000, () => {

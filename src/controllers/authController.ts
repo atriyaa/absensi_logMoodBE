@@ -30,7 +30,6 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       throw new AppError('Email dan password wajib diisi', 400);
     }
 
-    // 1. Cari data karyawan yang didaftarkan oleh Admin
     const existingEmployee = await db
       .select()
       .from(employees)
@@ -47,7 +46,6 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       throw new AppError('Akun sudah terdaftar/aktif. Silakan melakukan login.', 400);
     }
 
-    // 2. Hash password & update data
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await db
@@ -60,7 +58,6 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       message: 'Aktivasi akun/Register berhasil! Silakan login.'
     });
   } catch (error) {
-    // Semua error dilempar ke errorHandler milikmu
     next(error);
   }
 };
@@ -73,7 +70,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw new AppError('Email dan password wajib diisi', 400);
     }
 
-    // 1. Cari karyawan berdasarkan email
     const result = await db
       .select()
       .from(employees)
@@ -90,14 +86,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw new AppError('Akun belum diaktifkan. Silakan lakukan register/aktivasi terlebih dahulu.', 401);
     }
 
-    // 2. Verifikasi password
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       throw new AppError('Email atau password salah', 401);
     }
-
-    // 3. Buat Payload & Token
     const payload: JwtPayload = {
       id: user.id,
       email: user.email
@@ -111,7 +104,6 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       token
     });
   } catch (error) {
-    // Dilempar ke errorHandler
     next(error);
   }
 };
