@@ -4,7 +4,7 @@ import {
   getAllMoodJournals, 
   updateMoodJournal, 
   deleteMoodJournal 
-} from '../controllers/moodJournalController.js';
+} from '../controllers/moodJournalsController.js';
 import { authenticateToken } from '../middlewares/auth.js';
 
 const router = Router();

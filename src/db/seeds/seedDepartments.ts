@@ -1,26 +1,31 @@
-import { db } from '../index.js';
-import { departments } from '../departments.js';
-import { error } from 'node:console';
+import { db } from '../index.js'; // Adjust path ke instance DB kamu
+import { departments } from '../departments.js'; // Adjust path schema
 
-async function seedDepartments() {
-    await db.insert(departments).values([
-        {
-            departmentsName: 'Human Resources',
-            description: 'Mengelola rekrutmen, pelatihan, dan administrasi karyawan.'
-        },
-        {
-            departmentsName: 'Information Technology',
-            description: 'Bertanggung jawab atas pengembangan dan pemeliharaan sistem informasi.'
-        }
-    ]);
+export const seedDepartments = async () => {
+  console.log('⏳ Seeding departments...');
 
-    console.log('✅ Departments seeded successfully!');
-}
+  const dummyDepartments = [
+    {
+      departmentsName: 'Human Resources', // Sesuaikan dengan properti schema (departmentName / department_name)
+      description: 'Mengelola rekrutmen, pelatihan, dan administrasi karyawan.',
+    },
+    {
+      departmentsName: 'Information Technology',
+      description: 'Bertanggung jawab atas pengembangan dan pemeliharaan sistem informasi.',
+    },
+    {
+      departmentsName: 'Finance & Accounting',
+      description: 'Mengelola keuangan, penggajian, dan pembukuan perusahaan.',
+    },
+  ];
 
-seedDepartments()
-    .catch((error) => {
-        console.error('❌ Failed to seed departments', error);
-    })
-    .finally(async () => {
-        process.exit(0);
-    });
+  try {
+    await db.insert(departments).values(dummyDepartments);
+    console.log('✅ Seeding departments berhasil!');
+  } catch (error) {
+    console.error('❌ Gagal melakukan seed departments:', error);
+  }
+};
+
+// Jalankan jika file dipanggil langsung
+seedDepartments();

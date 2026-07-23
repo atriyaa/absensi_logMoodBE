@@ -1,27 +1,27 @@
-import { db } from '../index.js';
-import { roles } from '../roles.js';
-import { error } from 'node:console';
+import { db } from '../index.js'; // Adjust path ke instance DB kamu
+import { roles } from '../roles.js'; // Adjust path schema
 
-async function seedRoles() {
-    await db.insert(roles).values([
-        {
-            role_name: 'Admin',
-            description: 'Mengelola semua operasi di aplikasi absensi.'
-        },
-        {
-            role_name: 'Employe',
-            description: 'Karyawan Perusahaan'
-        }
-    ]);
+export const seedRoles = async () => {
+  console.log('⏳ Seeding roles...');
 
-    console.log('✅ Roles seeded successfully!')
-}
+  const dummyRoles = [
+    {
+      role_name: 'Admin', // Gunakan role_name jika schema Drizzle kamu tidak di-map ke camelCase
+      description: 'Mengelola semua operasi di aplikasi absensi.',
+    },
+    {
+      role_name: 'Employee',
+      description: 'Karyawan Perusahaan.',
+    },
+  ];
 
-seedRoles()
-    .catch((error) => {
-        console.error('❌ Failed to seed roles',
-        error);
-    })
-    .finally(async () => {
-        process.exit(0);
-    });
+  try {
+    await db.insert(roles).values(dummyRoles);
+    console.log('✅ Seeding roles berhasil!');
+  } catch (error) {
+    console.error('❌ Gagal melakukan seed roles:', error);
+  }
+};
+
+// Jalankan jika file dipanggil langsung
+seedRoles();
