@@ -6,14 +6,15 @@ import departmentsRoutes from './routes/departmentsRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import rolesRoutes from './routes/rolesRoutes.js';
-import  attendanceLogsRoutes  from './routes/attedanceLogsRoutes.js';
+import attendanceLogsRoutes  from './routes/attedanceLogsRoutes.js';
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import moodJournalsRoutes from './routes/moodJournalsRoutes.js';
 import workSchedulesRoutes from './routes/workSchedulesRoutes.js';
-
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
-// app.use(cors());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/health', async (_req, res) => {
@@ -26,6 +27,7 @@ app.get('/health', async (_req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/admin',dashboardRoutes)
 app.use('/departments', departmentsRoutes);
 app.use('/employees', employeesRoutes);
 app.use('/roles', rolesRoutes);

@@ -9,7 +9,7 @@ import { authenticateToken } from '../middlewares/auth.js';
 
 const router = Router();
 
-router.use(authenticateToken);
+// router.use(authenticateToken);
 router.post('/', createMoodJournal);
 router.get('/', getAllMoodJournals);
 router.put('/:id', updateMoodJournal);

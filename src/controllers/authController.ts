@@ -11,6 +11,8 @@ const SECRET_KEY = process.env.JWT_SECRET || 'KANGEN_IVAN';
 interface JwtPayload {
   id: number;
   email: string | null;
+  name: string | null;
+  role: number | null;
 }
 
 class AppError extends Error {
@@ -24,22 +26,22 @@ class AppError extends Error {
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {name, email, password } = req.body;
+    const {full_name, name, email, password } = req.body;
 
-    if (!name ||!email || !password) {
+    if (!full_name ||!name || !email || !password) {
       throw new AppError('Email dan password wajib diisi', 400);
     }
 
     const existingEmployee = await db
       .select()
       .from(employees)
-      .where(eq(employees.email, email))
+      .where(eq(employees.full_name, full_name))
       .limit(1);
 
     const user = existingEmployee[0];
-
+    
     if (!user) {
-      throw new AppError('Email belum terdaftar oleh Admin. Silakan hubungi Admin.', 404);
+      throw new AppError('Karyawan belum terdaftar oleh Admin. Silakan hubungi Admin.', 404);
     }
 
     if (user.password) {
@@ -50,8 +52,8 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     await db
       .update(employees)
-      .set({ password: hashedPassword })
-      .where(eq(employees.email, email));
+      .set({ password: hashedPassword, name: name, email: email })
+      .where(eq(employees.full_name, full_name));
 
     return res.status(200).json({
       success: true,
@@ -93,7 +95,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
     const payload: JwtPayload = {
       id: user.id,
-      email: user.email
+      email: user.email,
+      name: user.full_name,
+      role: user.role_id
     };
 
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });

@@ -6,10 +6,10 @@ import { authenticateToken  } from '../middlewares/auth.js';
 const router: Router = Router();
 const upload = multer();
 
-router.get('/', authenticateToken, upload.none(),employeesController.getAll);
-router.get('/', authenticateToken, upload.none(),employeesController.getById);
-router.get('/', authenticateToken, upload.none(),employeesController.createEmployee);
-router.get('/', authenticateToken, upload.none(),employeesController.updateEmployee);
-router.get('/', authenticateToken, upload.none(), employeesController.removeEmployee);
+router.get('/', employeesController.getAll);
+router.get('/:id', authenticateToken, employeesController.getById);
+router.post('/', authenticateToken, upload.none(), employeesController.createEmployee);
+router.put('/:id', authenticateToken, upload.none(), employeesController.updateEmployee);
+router.delete('/:id', authenticateToken, employeesController.removeEmployee);
 
 export default router;

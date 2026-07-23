@@ -2,6 +2,8 @@ import type { Request, Response, NextFunction } from "express";
 import { eq, or } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { employees } from "../db/employees.js";
+import { departments } from "../db/departments.js";
+import { roles } from "../db/roles.js";
 
 function isValidEmail(email: string) {
   return /^\S+@\S+\.\S+$/.test(email);
@@ -13,9 +15,33 @@ export async function getAll(
   next: NextFunction
 ) {
   try {
-    const data = await db.select().from(employees);
+    const data = await db
+      .select({
+        id: employees.id,
+        employeeCode: employees.employee_code,
+        fullName: employees.full_name,
+        email: employees.email,
+        phone: employees.no_phone,
+        department: departments.departmentsName,
+        role: roles.role_name,
+        status: employees.status,
+        photo: employees.photo,
+      })
+      .from(employees)
+      .leftJoin(
+        departments,
+        eq(employees.department_id, departments.id)
+      )
+      .leftJoin(
+        roles,
+        eq(employees.role_id, roles.id)
+      );
 
-    return res.json(data);
+    return res.status(200).json({
+      success: true,
+      message: "Berhasil mengambil data karyawan",
+      data,
+    });
   } catch (error) {
     return next(error);
   }

@@ -10,7 +10,7 @@ import { authenticateToken} from '../middlewares/auth.js';
 
 const router = Router();
 
-router.use(authenticateToken);
+// router.use(authenticateToken);
 
 // Get All & Get By ID
 router.get('/', getAllWorkSchedules);
