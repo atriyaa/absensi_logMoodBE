@@ -5,6 +5,7 @@ import employeesRoutes from './routes/employeesRoutes.js';
 import departmentsRoutes from './routes/departmentsRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
+import rolesRoutes from './routes/rolesRoutes.js';
 
 
 const app = express();
@@ -24,6 +25,7 @@ app.get('/health', async (_req, res) => {
 app.use('/auth', authRoutes);
 app.use('/departments', departmentsRoutes);
 app.use('/employees', employeesRoutes);
+app.use('/roles', rolesRoutes);
 
 
 
