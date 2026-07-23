@@ -24,9 +24,9 @@ class AppError extends Error {
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password } = req.body;
+    const {name, email, password } = req.body;
 
-    if (!email || !password) {
+    if (!name ||!email || !password) {
       throw new AppError('Email dan password wajib diisi', 400);
     }
 

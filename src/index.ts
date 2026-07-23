@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import rolesRoutes from './routes/rolesRoutes.js';
 import  attendanceLogsRoutes  from './routes/attedanceLogsRoutes.js';
 import moodJournalsRoutes from './routes/moodJournalsRoutes.js';
+import workSchedulesRoutes from './routes/workSchedulesRoutes.js';
 
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/employees', employeesRoutes);
 app.use('/roles', rolesRoutes);
 app.use('/attedanceLogs', attendanceLogsRoutes);
 app.use('/moodJournals', moodJournalsRoutes);
+app.use('/workSchedules', workSchedulesRoutes);
 app.use(errorHandler);
 
 app.listen(3000, () => {

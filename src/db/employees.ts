@@ -1,6 +1,7 @@
 import { mysqlTable, int, varchar, mysqlEnum, timestamp,} from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 import { departments } from "./departments.js";
+import { workSchedules } from "./workSchedules.js";
 import { roles } from "./roles.js";
 
 export const employees = mysqlTable("employees", {
@@ -14,6 +15,8 @@ export const employees = mysqlTable("employees", {
   photo: varchar("photo", { length: 200 }),
   department_id: int("department_id"),
   role_id: int("role_id"),
+  workScheduleId: int('work_schedule_id')
+    .references(() => workSchedules.id, { onDelete: 'set null' }),
   status: mysqlEnum("status", [
     "Active",
     "Inactive",
@@ -35,5 +38,10 @@ export const employeesRelations = relations(employees, ({ one }) => ({
   department: one(departments, {
     fields: [employees.department_id],
     references: [departments.id],
+  }),
+
+  workSchedule: one(workSchedules, {
+    fields: [employees.workScheduleId], // Sesuaikan nama properti di TS (workScheduleId)
+    references: [workSchedules.id],
   }),
 }));
