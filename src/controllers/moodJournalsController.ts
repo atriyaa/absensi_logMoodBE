@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, gte, lte, and } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { moodJournals } from '../db/moodJournals.js';
 import { employees } from '../db/employees.js';
@@ -14,9 +14,6 @@ class AppError extends Error {
 
 const VALID_MOODS = ['Excited', 'Happy', 'Neutral', 'Tired', 'Stressed'] as const;
 
-/**
- * 1. CREATE MOOD JOURNAL (Employee)
- */
 export const createMoodJournal = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const employeeId = (req as any).user?.id;
@@ -46,9 +43,6 @@ export const createMoodJournal = async (req: Request, res: Response, next: NextF
   }
 };
 
-/**
- * 2. GET ALL MOOD JOURNALS (Admin / Management)
- */
 export const getAllMoodJournals = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const logs = await db
@@ -67,6 +61,68 @@ export const getAllMoodJournals = async (req: Request, res: Response, next: Next
 
     return res.status(200).json({
       success: true,
+      data: logs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMonthlyMoodJournals = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { month, year, employeeId } = req.query;
+
+    // 1. Validasi parameter query wajib
+    if (!month || !year) {
+      return res.status(400).json({
+        success: false,
+        message: 'Parameter month dan year wajib diisi',
+      });
+    }
+
+    const numericMonth = Number(month);
+    const numericYear = Number(year);
+
+    // 2. Buat range tanggal awal dan akhir bulan (berdasarkan UTC/Lokal)
+    // Tanggal 1 di awal bulan pukul 00:00:00
+    const startDate = new Date(numericYear, numericMonth - 1, 1, 0, 0, 0, 0);
+    // Tanggal terakhir di bulan tersebut pukul 23:59:59
+    const endDate = new Date(numericYear, numericMonth, 0, 23, 59, 59, 999);
+
+    // 3. Susun array kondisi WHERE
+    const conditions = [
+      gte(moodJournals.createdAt, startDate),
+      lte(moodJournals.createdAt, endDate),
+    ];
+
+    // Jika ingin difilter per karyawan spesifik (opsional)
+    if (employeeId) {
+      conditions.push(eq(moodJournals.employeeId, Number(employeeId)));
+    }
+
+    // 4. Query ke Database dengan Drizzle ORM
+    const logs = await db
+      .select({
+        id: moodJournals.id,
+        employeeId: moodJournals.employeeId,
+        employeeName: employees.full_name,
+        attendanceLogId: moodJournals.attendanceLogId,
+        moodLevel: moodJournals.moodLevel,
+        note: moodJournals.note,
+        createdAt: moodJournals.createdAt,
+      })
+      .from(moodJournals)
+      .leftJoin(employees, eq(moodJournals.employeeId, employees.id))
+      .where(and(...conditions))
+      .orderBy(desc(moodJournals.createdAt));
+
+    return res.status(200).json({
+      success: true,
+      meta: {
+        month: numericMonth,
+        year: numericYear,
+        totalLogs: logs.length,
+      },
       data: logs,
     });
   } catch (error) {

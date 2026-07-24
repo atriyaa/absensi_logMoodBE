@@ -4,7 +4,8 @@ import {
   getAllMoodJournals,
   getMyMoodJournals,
   updateMoodJournal, 
-  deleteMoodJournal 
+  deleteMoodJournal,
+  getMonthlyMoodJournals
 } from '../controllers/moodJournalsController.js';
 import { authenticateToken } from '../middlewares/auth.js';
 
@@ -15,5 +16,6 @@ router.get('/', authenticateToken, getAllMoodJournals);
 router.get('/my-journals', authenticateToken, getMyMoodJournals);
 router.put('/:id', authenticateToken, updateMoodJournal);
 router.delete('/:id', authenticateToken, deleteMoodJournal);
+router.get('/mood-monthly', authenticateToken, getMonthlyMoodJournals);
 
 export default router;
