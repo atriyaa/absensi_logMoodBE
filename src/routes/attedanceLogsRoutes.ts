@@ -12,10 +12,9 @@ const router = Router();
 // Admin route (all attendance logs)
 router.get('/', getAllAttendanceLogs);
 
-// Employee routes
-// router.use(authenticateToken);
-router.post('/check-in', checkIn);
-router.put('/check-out', checkOut); 
-router.get('/my-history', getMyAttendance);
+// Employee routes (require JWT authentication)
+router.post('/check-in', authenticateToken, checkIn);
+router.put('/check-out', authenticateToken, checkOut); 
+router.get('/my-history', authenticateToken, getMyAttendance);
 
 export default router;

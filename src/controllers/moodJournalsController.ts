@@ -75,7 +75,40 @@ export const getAllMoodJournals = async (req: Request, res: Response, next: Next
 };
 
 /**
- * 3. UPDATE MOOD JOURNAL (Admin / Owner)
+ * 3. GET MY MOOD JOURNALS (Employee — hanya milik sendiri)
+ */
+export const getMyMoodJournals = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const employeeId = (req as any).user?.id;
+
+    if (!employeeId) {
+      throw new AppError('Unauthorized: Data user tidak ditemukan', 401);
+    }
+
+    const logs = await db
+      .select({
+        id: moodJournals.id,
+        employeeId: moodJournals.employeeId,
+        attendanceLogId: moodJournals.attendanceLogId,
+        moodLevel: moodJournals.moodLevel,
+        note: moodJournals.note,
+        createdAt: moodJournals.createdAt,
+      })
+      .from(moodJournals)
+      .where(eq(moodJournals.employeeId, employeeId))
+      .orderBy(desc(moodJournals.createdAt));
+
+    return res.status(200).json({
+      success: true,
+      data: logs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 4. UPDATE MOOD JOURNAL (Admin / Owner)
  */
 export const updateMoodJournal = async (req: Request, res: Response, next: NextFunction) => {
   try {

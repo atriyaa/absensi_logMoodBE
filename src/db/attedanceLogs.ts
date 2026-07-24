@@ -5,7 +5,8 @@ import {
   date, 
   timestamp, 
   decimal, 
-  mysqlEnum 
+  mysqlEnum,
+  longtext
 } from 'drizzle-orm/mysql-core';
 import { employees } from './employees.js'; 
 
@@ -20,6 +21,7 @@ export const attendanceLogs = mysqlTable('attendance_logs', {
   latitudeOut: decimal('latitude_out', { precision: 10, scale: 8 }),
   longitudeOut: decimal('longitude_out', { precision: 11, scale: 8 }),
   workingHours: decimal('working_hours', { precision: 4, scale: 2 }),
+  photoIn: longtext('photo_in'),
   attendanceStatus: mysqlEnum('attendance_status', [
     'present', 
     'late', 

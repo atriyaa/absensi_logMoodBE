@@ -4,6 +4,7 @@ import { db } from "../db/index.js";
 import { employees } from "../db/employees.js";
 import { departments } from "../db/departments.js";
 import { roles } from "../db/roles.js";
+import { workSchedules } from "../db/workSchedules.js";
 function isValidEmail(email: string) {
   return /^\S+@\S+\.\S+$/.test(email);
 }
@@ -24,6 +25,7 @@ export async function getAll(
         role: roles.role_name,
         status: employees.status,
         photo: employees.photo,
+        work_schedule : workSchedules.scheduleName
       })
       .from(employees)
       .leftJoin(
@@ -33,6 +35,10 @@ export async function getAll(
       .leftJoin(
         roles,
         eq(employees.role_id, roles.id)
+      )
+      .leftJoin(
+        workSchedules,
+        eq(employees.workScheduleId,workSchedules.id)
       );
     return res.status(200).json({
       success: true,
@@ -79,6 +85,7 @@ export async function createEmployee(req: Request,res: Response,next: NextFuncti
       no_phone,
       department_id,
       role_id,
+      workScheduleId
     } = req.body;
     if (!employee_code || !full_name || !no_phone) {
       return next({
@@ -103,7 +110,8 @@ export async function createEmployee(req: Request,res: Response,next: NextFuncti
       no_phone,
       department_id,
       role_id,
-      status: "Inactive",
+      workScheduleId,
+      status: "Inactive"
     });
     const created = await db
       .select()
@@ -138,6 +146,7 @@ export async function updateEmployee(req: Request,res: Response,next: NextFuncti
       department_id,
       role_id,
       status,
+      workScheduleId
     } = req.body;
     if (!employee_code || !full_name || !no_phone) {
       return next({
@@ -195,6 +204,7 @@ export async function updateEmployee(req: Request,res: Response,next: NextFuncti
         department_id,
         role_id,
         status,
+        workScheduleId,
         updated_at: new Date(),
       })
       .where(eq(employees.id, id));

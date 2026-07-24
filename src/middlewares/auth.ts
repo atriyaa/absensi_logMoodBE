@@ -1,30 +1,40 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from 'jsonwebtoken';
-import { error } from "node:console";
 
-const SECRET_KEY = 'KANGEN_IVAN';
+const SECRET_KEY = process.env.JWT_SECRET || 'KANGEN_IVAN';
 
 declare global {
     namespace Express {
         interface Request {
             user?: {
-                id: string;
-                email: string;
+                id: number;
+                email: string | null;
+                name?: string | null;
+                role?: number | null;
             };
         }
-
     }
 }
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers['authorization']?.split(' ')[1];
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized: Token autentikasi tidak ditemukan. Silakan login terlebih dahulu.'
+        });
+    }
 
-    jwt.verify(token, SECRET_KEY, (error, user) => {
-        if (error) return res.sendStatus(403);
-        (req.user?.id);
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({
+                success: false,
+                message: 'Forbidden: Token tidak valid atau sudah kadaluarsa.'
+            });
+        }
+        (req as any).user = decoded;
         next();
-
     });
 };

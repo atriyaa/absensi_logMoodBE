@@ -6,19 +6,17 @@ import {
   updateWorkSchedule,
   deleteWorkSchedule,
 } from '../controllers/workSchedulesController.js';
-import { authenticateToken} from '../middlewares/auth.js';
+import { authenticateToken } from '../middlewares/auth.js';
 
 const router = Router();
 
-// router.use(authenticateToken);
-
-// Get All & Get By ID
-router.get('/', getAllWorkSchedules);
-router.get('/:id', getWorkScheduleById);
+// Get All & Get By ID (harus login)
+router.get('/', authenticateToken, getAllWorkSchedules);
+router.get('/:id', authenticateToken, getWorkScheduleById);
 
 // Admin Only Routes
-router.post('/', createWorkSchedule);
-router.put('/:id', updateWorkSchedule);
-router.delete('/:id', deleteWorkSchedule);
+router.post('/', authenticateToken, createWorkSchedule);
+router.put('/:id', authenticateToken, updateWorkSchedule);
+router.delete('/:id', authenticateToken, deleteWorkSchedule);
 
 export default router;

@@ -13,9 +13,19 @@ import workSchedulesRoutes from './routes/workSchedulesRoutes.js';
 import cors from 'cors';
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Auto migration to ensure photo_in column exists in attendance_logs MySQL table
+(async () => {
+  try {
+    await db.execute(sql`ALTER TABLE attendance_logs ADD COLUMN photo_in LONGTEXT`);
+    console.log('Kolom photo_in berhasil ditambahkan ke tabel attendance_logs');
+  } catch {
+    // Abaikan jika kolom photo_in sudah ada di MySQL
+  }
+})();
 
 app.get('/health', async (_req, res) => {
   try {

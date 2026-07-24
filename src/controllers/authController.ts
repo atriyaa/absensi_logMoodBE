@@ -52,7 +52,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     await db
       .update(employees)
-      .set({ password: hashedPassword, name: name, email: email })
+      .set({ password: hashedPassword, name: name, email: email, status:"Active"})
       .where(eq(employees.full_name, full_name));
 
     return res.status(200).json({

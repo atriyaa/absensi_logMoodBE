@@ -12,10 +12,11 @@ class AppError extends Error {
     this.statusCode = statusCode;
   }
 }
+
 export const checkIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const employeeId = (req as any).user?.id; 
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, photo } = req.body;
 
     if (!employeeId) {
       throw new AppError('Unauthorized: Data user tidak ditemukan', 401);
@@ -47,6 +48,7 @@ export const checkIn = async (req: Request, res: Response, next: NextFunction) =
       checkIn: now,
       latitudeIn: latitude.toString(),
       longitudeIn: longitude.toString(),
+      photoIn: photo || null,
       attendanceStatus,
     });
     const createdLog = await db
@@ -68,6 +70,7 @@ export const checkIn = async (req: Request, res: Response, next: NextFunction) =
     next(error);
   }
 };
+
 export const checkOut = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const employeeId = (req as any).user?.id;
@@ -124,6 +127,7 @@ export const checkOut = async (req: Request, res: Response, next: NextFunction) 
     next(error);
   }
 };
+
 export const getMyAttendance = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const employeeId = (req as any).user?.id;
@@ -133,7 +137,8 @@ export const getMyAttendance = async (req: Request, res: Response, next: NextFun
     const logs = await db
       .select()
       .from(attendanceLogs)
-      .where(eq(attendanceLogs.employeeId, employeeId));
+      .where(eq(attendanceLogs.employeeId, employeeId))
+      .orderBy(desc(attendanceLogs.createdAt));
     return res.status(200).json({
       success: true,
       message: 'Berhasil mengambil riwayat presensi',
@@ -159,6 +164,7 @@ export const getAllAttendanceLogs = async (_req: Request, res: Response, next: N
         checkIn: attendanceLogs.checkIn,
         checkOut: attendanceLogs.checkOut,
         workingHours: attendanceLogs.workingHours,
+        photoIn: attendanceLogs.photoIn,
         attendanceStatus: attendanceLogs.attendanceStatus,
         createdAt: attendanceLogs.createdAt,
       })
