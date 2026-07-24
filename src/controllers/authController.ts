@@ -111,3 +111,83 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     next(error);
   }
 };
+
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const employeeId = (req as any).user?.id;
+
+    if (!employeeId) {
+      throw new AppError('Unauthorized', 401);
+    }
+
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      throw new AppError('Nama tidak boleh kosong', 400);
+    }
+
+    await db
+      .update(employees)
+      .set({ full_name: name.trim(), name: name.trim() })
+      .where(eq(employees.id, employeeId));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Nama berhasil diperbarui',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const employeeId = (req as any).user?.id;
+
+    if (!employeeId) {
+      throw new AppError('Unauthorized', 401);
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      throw new AppError('Password lama dan password baru wajib diisi', 400);
+    }
+
+    if (newPassword.length < 6) {
+      throw new AppError('Password baru minimal 6 karakter', 400);
+    }
+
+    const result = await db
+      .select()
+      .from(employees)
+      .where(eq(employees.id, employeeId))
+      .limit(1);
+
+    const user = result[0];
+
+    if (!user || !user.password) {
+      throw new AppError('Akun tidak ditemukan', 404);
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      throw new AppError('Password lama tidak sesuai', 400);
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await db
+      .update(employees)
+      .set({ password: hashed })
+      .where(eq(employees.id, employeeId));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password berhasil diubah',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
