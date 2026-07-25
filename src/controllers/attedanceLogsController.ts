@@ -5,6 +5,7 @@ import { attendanceLogs } from '../db/attedanceLogs.js';
 import { employees } from '../db/employees.js';
 import { departments } from '../db/departments.js';
 import { moodJournals } from '../db/moodJournals.js';
+import ExcelJS from "exceljs";
 
 class AppError extends Error {
   statusCode: number;
@@ -182,18 +183,15 @@ export const getAllAttendanceLogs = async (_req: Request, res: Response, next: N
 
 export const getMonthlyAttendanceLogs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { month, year, employeeId } = req.query;
-    if (!month || !year) {
-      return res.status(400).json({
-        success: false,
-        message: 'Parameter month dan year wajib diisi',
-      });
-    }
-    const numericMonth = Number(month);
-    const numericYear = Number(year);
-    const startDate = `${numericYear}-${String(numericMonth).padStart(2, '0')}-01`;
+    const { employeeId } = req.query;
+
+    const today = new Date();
+
+    const numericMonth = today.getMonth() + 1;
+    const numericYear = today.getFullYear();
+    const startDate = `${numericYear}-${String(numericMonth).padStart(2, "0")}-01`;
     const lastDay = new Date(numericYear, numericMonth, 0).getDate();
-    const endDate = `${numericYear}-${String(numericMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    const endDate = `${numericYear}-${String(numericMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
 
     // 3. Menyusun kondisi WHERE (Kombinasi Range Tanggal + Optional Employee ID)
     const conditions = [
@@ -227,15 +225,43 @@ export const getMonthlyAttendanceLogs = async (req: Request, res: Response, next
       .where(and(...conditions))
       .orderBy(desc(attendanceLogs.attendanceDate)); // Diurutkan berdasarkan tanggal absensi
 
-    return res.status(200).json({
-      success: true,
-      meta: {
-        month: numericMonth,
-        year: numericYear,
-        totalLogs: logs.length,
-      },
-      data: logs,
-    });
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Attendance");
+
+      worksheet.columns = [
+            { header: "Tanggal", key: "date", width: 15 },
+            { header: "Nama", key: "name", width: 30 },
+            { header: "Divisi", key: "department", width: 20 },
+            { header: "Check In", key: "checkIn", width: 15 },
+            { header: "Check Out", key: "checkOut", width: 15 },
+            { header: "Jam Kerja", key: "workingHours", width: 15 },
+            { header: "Status", key: "status", width: 15 },
+        ];
+      logs.forEach((log) => {
+          worksheet.addRow({
+              date: log.attendanceDate,
+              name: log.employeeName,
+              department: log.departmentName,
+              checkIn: log.checkIn,
+              checkOut: log.checkOut,
+              workingHours: log.workingHours,
+              status: log.attendanceStatus,
+          });
+      });
+
+      res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=Attendance-${numericMonth}-${numericYear}.xlsx`
+        );
+
+        await workbook.xlsx.write(res);
+        res.end();
+        return;
   } catch (error) {
     next(error);
   }
@@ -303,73 +329,47 @@ export const getDepartmentMonthlyReport = async (req: Request, res: Response, ne
         )
       );
 
-    // 3. Transformasi Data: Grouping berdasarkan Departemen -> Karyawan
-    const departmentMap = new Map<number, any>();
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Department Report");
+
+    worksheet.columns = [
+        { header: "Departemen", key: "departmentName", width: 20 },
+        { header: "Nama Karyawan", key: "employeeName", width: 30 },
+        { header: "Tanggal Absensi", key: "attendanceDate", width: 15 },
+        { header: "Check In", key: "checkIn", width: 15 },
+        { header: "Check Out", key: "checkOut", width: 15 },
+        { header: "Jam Kerja", key: "workingHours", width: 15 },
+        { header: "Status Absensi", key: "attendanceStatus", width: 15 },
+        { header: "Level Mood", key: "moodLevel", width: 15 },
+        { header: "Catatan Mood", key: "moodNote", width: 30 },
+    ];
 
     rawData.forEach((row) => {
-      // 3a. Inisialisasi Departemen jika belum ada
-      if (!departmentMap.has(row.departmentId)) {
-        departmentMap.set(row.departmentId, {
-          departmentId: row.departmentId,
-          departmentName: row.departmentName,
-          employees: new Map<number, any>(),
+        worksheet.addRow({
+            departmentName: row.departmentName,
+            employeeName: row.employeeName,
+            attendanceDate: row.attendanceDate,
+            checkIn: row.checkIn,
+            checkOut: row.checkOut,
+            workingHours: row.workingHours,
+            attendanceStatus: row.attendanceStatus,
+            moodLevel: row.moodLevel || "-",
+            moodNote: row.moodNote || "-",
         });
-      }
-
-      const currentDept = departmentMap.get(row.departmentId);
-
-      // 3b. Inisialisasi Karyawan jika belum ada di departemen ini
-      if (!currentDept.employees.has(row.employeeId)) {
-        currentDept.employees.set(row.employeeId, {
-          employeeId: row.employeeId,
-          employeeName: row.employeeName,
-          attendanceLogs: [],
-          moodJournals: [],
-        });
-      }
-
-      const currentEmp = currentDept.employees.get(row.employeeId);
-
-      // 3c. Masukkan log absensi (cegah duplikat berdasarkan ID absensi)
-      if (row.attendanceId && !currentEmp.attendanceLogs.some((a: any) => a.id === row.attendanceId)) {
-        currentEmp.attendanceLogs.push({
-          id: row.attendanceId,
-          date: row.attendanceDate,
-          checkIn: row.checkIn,
-          checkOut: row.checkOut,
-          workingHours: row.workingHours,
-          status: row.attendanceStatus,
-        });
-      }
-
-      // 3d. Masukkan mood log (cegah duplikat berdasarkan ID mood)
-      if (row.moodId && !currentEmp.moodJournals.some((m: any) => m.id === row.moodId)) {
-        currentEmp.moodJournals.push({
-          id: row.moodId,
-          moodLevel: row.moodLevel,
-          note: row.moodNote,
-          createdAt: row.moodCreatedAt,
-        });
-      }
     });
 
-    // 4. Format Map kembali ke bentuk Array JSON
-    const result = Array.from(departmentMap.values()).map((dept) => ({
-      departmentId: dept.departmentId,
-      departmentName: dept.departmentName,
-      totalEmployeesPresent: dept.employees.size,
-      employees: Array.from(dept.employees.values()),
-    }));
+    res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=DepartmentReport-${numericMonth}-${numericYear}.xlsx`
+    );
 
-    return res.status(200).json({
-      success: true,
-      meta: {
-        month: numericMonth,
-        year: numericYear,
-        totalDepartments: result.length,
-      },
-      data: result,
-    });
+    await workbook.xlsx.write(res);
+    res.end();
+    return;
   } catch (error) {
     next(error);
   }

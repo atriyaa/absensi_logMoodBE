@@ -59,8 +59,22 @@ export async function getById(req: Request,res: Response,next: NextFunction) {
       });
     }
     const data = await db
-      .select()
+      .select({
+        id: employees.id,
+        employeeCode: employees.employee_code,
+        fullName: employees.full_name,
+        email: employees.email,
+        phone: employees.no_phone,
+        department: departments.departmentsName,
+        role: roles.role_name,
+        status: employees.status,
+        photo: employees.photo,
+        work_schedule: workSchedules.scheduleName,
+      })
       .from(employees)
+      .leftJoin(departments, eq(employees.department_id, departments.id))
+      .leftJoin(roles, eq(employees.role_id, roles.id))
+      .leftJoin(workSchedules, eq(employees.workScheduleId, workSchedules.id))
       .where(eq(employees.id, id))
       .limit(1);
     if (!data[0]) {
@@ -77,6 +91,7 @@ export async function getById(req: Request,res: Response,next: NextFunction) {
     return next(error);
   }
 }
+
 export async function createEmployee(req: Request,res: Response,next: NextFunction) {
   try {
     const {

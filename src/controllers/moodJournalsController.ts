@@ -3,6 +3,7 @@ import { eq, desc, gte, lte, and } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { moodJournals } from '../db/moodJournals.js';
 import { employees } from '../db/employees.js';
+import ExcelJS from "exceljs";
 
 class AppError extends Error {
   statusCode: number;
@@ -116,15 +117,37 @@ export const getMonthlyMoodJournals = async (req: Request, res: Response, next: 
       .where(and(...conditions))
       .orderBy(desc(moodJournals.createdAt));
 
-    return res.status(200).json({
-      success: true,
-      meta: {
-        month: numericMonth,
-        year: numericYear,
-        totalLogs: logs.length,
-      },
-      data: logs,
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Mood Journals");
+
+    worksheet.columns = [
+        { header: "Tanggal", key: "date", width: 15 },
+        { header: "Nama", key: "name", width: 30 },
+        { header: "Level Mood", key: "moodLevel", width: 15 },
+        { header: "Catatan", key: "note", width: 40 },
+    ];
+
+    logs.forEach((log) => {
+        worksheet.addRow({
+            date: log.createdAt ? log.createdAt.toISOString().split('T')[0] : "-",
+            name: log.employeeName,
+            moodLevel: log.moodLevel,
+            note: log.note,
+        });
     });
+
+    res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=MoodJournals-${numericMonth}-${numericYear}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+    return;
   } catch (error) {
     next(error);
   }
