@@ -1,9 +1,9 @@
 import express from 'express';
 import { sql } from 'drizzle-orm';
 import { db } from './db/index.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 import employeesRoutes from './routes/employeesRoutes.js';
 import departmentsRoutes from './routes/departmentsRoutes.js';
-import { errorHandler } from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import rolesRoutes from './routes/rolesRoutes.js';
 import attendanceLogsRoutes  from './routes/attedanceLogsRoutes.js';

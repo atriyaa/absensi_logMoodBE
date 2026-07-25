@@ -1,0 +1,1 @@
+ALTER TABLE `attendance_logs` ADD `photo_in` longtext;
