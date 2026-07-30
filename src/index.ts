@@ -14,7 +14,11 @@ import cors from 'cors';
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Auto migration to ensure photo_in column exists in attendance_logs MySQL table
