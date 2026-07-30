@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import multer from 'multer';
+import * as departmentsController from '../controllers/departmentsController.js';
+import { authenticateToken } from '../middlewares/auth.js';
+const router = Router();
+const upload = multer();
+router.get('/', departmentsController.getAllDepartments);
+router.get('/:id', departmentsController.getDepartmentsById);
+router.post('/', authenticateToken, upload.none(), departmentsController.createDepartments);
+router.put('/:id', authenticateToken, upload.none(), departmentsController.updateDepartments);
+router.delete('/:id', authenticateToken, upload.none(), departmentsController.removeDepartments);
+export default router;
+//# sourceMappingURL=departmentsRoutes.js.map

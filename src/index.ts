@@ -31,8 +31,8 @@ app.get('/health', async (_req, res) => {
   try {
     await db.execute(sql`SELECT 1`);
     return res.json({ status: 'ok' });
-  } catch {
-    return res.status(500).json({ status: 'error' });
+  } catch (err){
+    return res.status(500).json({ status: err});
   }
 });
 
